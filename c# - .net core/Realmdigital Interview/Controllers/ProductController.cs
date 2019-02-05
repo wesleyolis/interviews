@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Realmdigital_Interview.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Realmdigital_Interview.Controllers
 {
@@ -9,6 +12,11 @@ namespace Realmdigital_Interview.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private IServiceProvider serviceProvider;
+
+        public ProductController(IServiceProvider serviceProvider)
+        {
+        }
         
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -21,11 +29,13 @@ namespace Realmdigital_Interview.Controllers
         {
             string response = "";
 
-            using (var client = new WebClient())
+            var scope = serviceProvider.CreateScope();
+            using (var client = scope.ServiceProvider.GetRequiredService<IWebClient>())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 response = client.UploadString("http://192.168.0.241/eanlist?type=Web", "POST", "{ \"id\": \"" + id + "\" }");
             }
+            
             var reponseObject = JsonConvert.DeserializeObject<List<ApiResponseProduct>>(response);
 
             var result = new List<object>();
@@ -58,11 +68,13 @@ namespace Realmdigital_Interview.Controllers
         {
             string response = "";
 
-            using (var client = new WebClient())
+            var scope = serviceProvider.CreateScope();
+            using (var client = scope.ServiceProvider.GetRequiredService<IWebClient>())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 response = client.UploadString("http://192.168.0.241/eanlist?type=Web", "POST", "{ \"names\": \"" + productName + "\" }");
             }
+         
             var reponseObject = JsonConvert.DeserializeObject<List<ApiResponseProduct>>(response);
 
             var result = new List<object>();
